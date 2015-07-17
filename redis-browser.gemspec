@@ -29,5 +29,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency "sass"
   spec.add_runtime_dependency "coffee-script"
   spec.add_runtime_dependency "multi_json"
-  spec.add_runtime_dependency "redis"
+  spec.add_runtime_dependency "redis-rails"
 end

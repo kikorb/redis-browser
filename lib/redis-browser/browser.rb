@@ -38,54 +38,6 @@ module RedisBrowser
       end.values.sort_by {|e| e[:name] }
     end
 
-    def item_type(e)
-      begin
-        ["json", MultiJson.decode(e)]
-      rescue MultiJson::LoadError => ex
-        ["string", e]
-      end
-    end
-
-    def get_list(key, opts = {})
-      start = opts[:start] ? opts[:start].to_i : 0
-      stop  = opts[:stop] ? opts[:stop].to_i : 99
-
-      length = redis.llen(key)
-      values = redis.lrange(key, start, stop).map.with_index do |e, i|
-        type, value = item_type(e)
-        {:type => type, :value => value, :index => start + i}
-      end
-
-      {:length => length, :values => values}
-    end
-
-    def get_set(key)
-      values = redis.smembers(key).map do |e|
-        type, value = item_type(e)
-        {:type => type, :value => value}
-      end
-
-      {:values => values }
-    end
-
-    def get_zset(key)
-      values = redis.zrange(key, 0, -1, :withscores => true).map do |e, score|
-        type, value = item_type(e)
-        {:type => type, :value => value, :score => score}
-      end
-
-      {:values => values }
-    end
-
-    def get_hash(key)
-      value = Hash[redis.hgetall(key).map do |k,v|
-        type, value = item_type(v)
-        [k, {:type => type, :value => value}]
-      end]
-
-      {:value => value}
-    end
-
     def get_keys(key)
       key ||= ""
       key << "*" unless key.end_with?("*")
@@ -94,7 +46,7 @@ module RedisBrowser
         {:name => k, :full => k}
       end
 
-      {:values => values}
+      {values: values}
     end
 
     def delete(pattern)
@@ -102,27 +54,16 @@ module RedisBrowser
     end
 
     def get(key, opts = {})
-      type = redis.type(key)
-      data = case type
-      when "string"
-        type, value = item_type(redis.get(key))
-        {:value => value, :type => type}
-      when "list"
-        get_list(key, opts)
-      when "set"
-        get_set(key)
-      when "zset"
-        get_zset(key)
-      when "hash"
-        get_hash(key)
+      keys = keys(key)
+      if keys.length > 1
+        data = get_keys(key)
+      elsif keys.present?
+        full = keys.first[:full]
+        data = {value: redis.get(full), type: "string", full: full}
       else
-        get_keys(key)
+        data = {value: redis.get(key), type: "string", full: key}
       end
-
-      {
-        :full => key,
-        :type => type
-      }.merge(data)
+      data
     end
 
     def ping
@@ -134,7 +75,7 @@ module RedisBrowser
 
     def redis
       @redis ||= begin
-        r = Redis.new(@conn)
+        r = Redis::Store.new(@conn)
         auth = @conn['auth']
         r.auth(auth) if auth
         r
