@@ -46,19 +46,24 @@ module RedisBrowser
         {:name => k, :full => k}
       end
 
-      {values: values}
+      {values: values, full: key}
     end
 
     def delete(pattern)
-      redis.del(redis.keys(pattern))
+      pattern << "*" unless pattern.end_with?("*")
+
+      redis.keys(pattern).each do |key|
+        redis.del(key)
+      end
     end
 
     def get(key, opts = {})
-      keys = keys(key)
+      key << "*" unless key.end_with?("*")
+      keys = redis.keys(key)
       if keys.length > 1
         data = get_keys(key)
       elsif keys.present?
-        full = keys.first[:full]
+        full = keys.first
         data = {value: redis.get(full), type: "string", full: full}
       else
         data = {value: redis.get(key), type: "string", full: key}

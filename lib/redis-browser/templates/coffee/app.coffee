@@ -157,6 +157,7 @@ app.factory 'API', ['$http', ($http) ->
         if result == "delete"
           $scope.api.delete(key: key.name)
           $scope.show($scope.key)
+          $scope.fetchKeys()
       )
 
   $scope.deleteAll = ->
@@ -173,6 +174,7 @@ app.factory 'API', ['$http', ($http) ->
         if result == "delete"
           $scope.api.delete(key: $scope.key.full)
           $scope.show($scope.key)
+          $scope.fetchKeys()
       )
 
 
@@ -186,5 +188,3 @@ app.factory 'API', ['$http', ($http) ->
 
   # Init
   $scope.fetchKeys()
-
-

@@ -83,58 +83,11 @@ html ng-app="browser"
 
           div ng-switch="key.type"
             pre ng-switch-when="string"
-              ' {{ key.value }}
+              ' {{ key.value | json }}
+              button.btn.btn-danger ng-show="key" ng-click="deleteAll()" Delete
 
             pre ng-switch-when="json"
               ' {{ key.value | json }}
-
-            div ng-switch-when="set"
-              table.table.table-striped.table-bordered.value-list
-                tr ng-repeat="e in key.values"
-                  td ng-switch="e.type"
-                    pre ng-switch-when="json"
-                      ' {{ e.value | json }}
-                    pre ng-switch-when="string"
-                      ' {{ e.value }}
-
-            div ng-switch-when="zset"
-              table.table.table-striped.table-bordered.value-list
-                tr
-                  th Value
-                  th.value-zset-score Score
-                tr ng-repeat="e in key.values"
-                  td ng-switch="e.type"
-                    pre ng-switch-when="json"
-                      ' {{ e.value | json }}
-                    pre ng-switch-when="string"
-                      ' {{ e.value }}
-                  td
-                    ' {{ e.score }}
-
-
-            div ng-switch-when="hash"
-
-              div ng-show="config.hashView == 'json'"
-                div
-                  button.btn.btn-primary.pull-right ng-click="config.setHashView('table')" Switch to Table view
-                pre
-                  ' {{ key.json | json }}
-
-              div ng-show="config.hashView == 'table'"
-                table.table.table-striped.table-bordered.value-list
-                  tr
-                    th Key
-                    th
-                      ' Value
-                      button.btn.btn-primary.pull-right ng-click="config.setHashView('json')" Switch to JSON view
-                  tr ng-repeat="(k,e) in key.value"
-                    td
-                      ' {{ k }}
-                    td ng-switch="e.type"
-                      pre ng-switch-when="json"
-                        ' {{ e.value | json }}
-                      pre ng-switch-when="string"
-                        ' {{ e.value }}
 
             div ng-switch-when="list"
               .alert
@@ -200,6 +153,3 @@ html ng-app="browser"
 
 
               / span.alert.alert-danger Key not found
-
-
-
